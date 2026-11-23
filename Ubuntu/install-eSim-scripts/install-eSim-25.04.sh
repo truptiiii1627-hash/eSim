@@ -132,8 +132,8 @@ function installKicad
                     exit 1
                 fi
             else
-                echo "KiCad 8.0 is already installed."
-                exit 0
+                echo "KiCad 8.0 is already installed. Skipping KiCad installation."
+                return 0
             fi
         fi
 
@@ -171,7 +171,8 @@ function installDependency
     trap error_exit ERR
     
     echo "Instaling virtualenv......................."
-    sudo apt install python3-virtualenv
+    sudo apt install -y python3-virtualenv
+    sudo apt-get install -y unzip
    
     echo "Creating virtual environment to isolate packages "
     virtualenv $config_dir/env
@@ -231,15 +232,12 @@ function copyKicadLibrary
     #Extract custom KiCad Library
     tar -xJf library/kicadLibrary.tar.xz
 
-    if [ -d ~/.config/kicad/6.0 ];then
-        echo "kicad config folder already exists"
-    else 
-        echo ".config/kicad/6.0 does not exist"
-        mkdir -p ~/.config/kicad/6.0
-    fi
+    kicad_config_dir="$HOME/.config/kicad"
+    kicad_ver="8.0"
+    mkdir -p "$kicad_config_dir/$kicad_ver"
 
     # Copy symbol table for eSim custom symbols 
-    cp kicadLibrary/template/sym-lib-table ~/.config/kicad/6.0/
+    cp kicadLibrary/template/sym-lib-table "$kicad_config_dir/$kicad_ver/"
     echo "symbol table copied in the directory"
 
     # Copy KiCad symbols made for eSim
@@ -298,6 +296,7 @@ function createDesktopStartScript
     # Copy desktop icon file to share applications
     sudo cp -vp esim.desktop /usr/share/applications/
     # Copy desktop icon file to Desktop
+    mkdir -p "$HOME/Desktop"
     cp -vp esim.desktop $HOME/Desktop/
 
     set +e      # Temporary disable exit on error
